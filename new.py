@@ -66,22 +66,6 @@ class WebScrapping:
 
 
 
-headers = {
-    'User-Agent': 'Mozilla/5.0'
-}
-base_url = "https://law.justia.com/cases/new-jersey/tax-court/"
-
-scraper = WebScrapping(headers, base_url)
-year_links = scraper.get_year_links()
-html_links = scraper.get_html_links(year_links)
-
-'''
-extractor = PDFExtractor(headers)
-pdf_links = extractor.get_pdf_links(html_links)
-print(f"PDF links found: {len(pdf_links)}")
-'''
-
-
 
 
 
