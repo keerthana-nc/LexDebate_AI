@@ -168,13 +168,6 @@ class PDFExtractor:
 
         return summary
 
-headers = {
-    'User-Agent': 'Mozilla/5.0'
-}
-base_url = "https://law.justia.com/cases/new-jersey/tax-court/"
 
-pdf_extractor = PDFExtractor(headers, base_url)
-
-#pdf_links = pdf_extractor.get_pdf_links(html_links)
 
 
