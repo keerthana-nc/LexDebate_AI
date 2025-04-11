@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 import fitz  # PyMuPDF
 import re
+from urllib.parse import urljoin
 
 
 class PDFExtractor:
@@ -32,7 +33,8 @@ class PDFExtractor:
             for tag in soup.find_all('a', href=True):
                 href = tag['href']
                 if '.pdf' in href:
-                    pdf_links.append(href)
+                    full_url = urljoin(link, href)
+                    pdf_links.append(full_url)
 
         print(f"the number of pdf links obtained are:{len(pdf_links)}")  # 603 this number shld have been more than 1299
 
