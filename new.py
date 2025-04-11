@@ -13,6 +13,70 @@ headers = {
 response = requests.get(base_url, headers=headers)
 soup = BeautifulSoup(response.text, 'html.parser')
 
+# base url links -> year links -> a list of html links -> pdf document opens
+# Step 3: Get year links
+import re
+year_links = [] # list that contains links of all the years available in base url.
+
+for tag in soup.find_all('a', href = True):
+    href = tag['href']
+    if re.match(r'/cases/new-jersey/tax-court/\d{4}/', href):
+        # href contains part of the url eg: a -> <a href="/cases/new-jersey/tax-court/2025/">2025</a> ;
+        # href: /cases/new-jersey/tax-court/2025/
+        year_link = urljoin(base_url, href)
+        # year_link contains https://law.justia.com/cases/new-jersey/tax-court/2025
+        year_links.append(year_link)
+#year_links list has all the year links along with only 15 html links from 2025 and 2024 combined.
+# Removing html links from year_links to have only year links then access html links from all these links.
+filtered_year_links = []
+for link in year_links:
+    if not link.endswith('html'):
+        filtered_year_links.append(link)
+year_links = filtered_year_links
+
+print(f"the length of year_links after removing html files are:{len(year_links)}") # 44
+
+# Now that we have year_links we need to access html files from those links
+html_links = []
+for link in year_links:
+    response = requests.get(link, headers=headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    for tag in soup.find_all('a', href=True):
+        href_links = tag['href'] # href_links contains hyperlinks from those links which contain href -> href - True
+        if href_links.endswith('html'):
+            html_link  = urljoin(link, href_links)
+            html_links.append(html_link)
+
+print(f"the total number of html files read are: {len(html_links)}") #1299
+
+# Now that html files are read, these html files contain pdf documents.
+# next step is to read those pdf documents.
+
+pdf_links = []
+# to read content in html files
+for link in html_links:
+    response = requests.get(link, headers = headers)
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    for tag in soup.find_all('a', href = True):
+        href = tag['href']
+        if '.pdf' in href:
+            pdf_links.append(href)
+
+print(f"the number of pdf links obtained are:{len(pdf_links)}") #603 this number shld have been more than 1299
+
+
+
+
+
+
+
+
+
+
+
+'''
 case_links = []
 for tag in soup.find_all('a', href=True):
     href = tag['href']
@@ -141,4 +205,4 @@ case_years = find_year(all_text_cases)
 print(case_years)
 summary = find_summary(all_text_cases)
 print(summary)
-
+'''
