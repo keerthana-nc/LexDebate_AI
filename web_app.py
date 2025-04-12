@@ -8,6 +8,7 @@ from new import WebScrapping
 from pdf_extractor import PDFExtractor
 
 app = Flask(__name__)
+#Starting
 
 # Base setup
 BASE_URL = "https://law.justia.com/cases/new-jersey/tax-court/"
