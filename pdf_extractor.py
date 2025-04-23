@@ -36,7 +36,7 @@ class PDFExtractor:
                     full_url = urljoin(link, href)
                     pdf_links.append(full_url)
 
-        print(f"the number of pdf links obtained are:{len(pdf_links)}")
+        #print(f"the number of pdf links obtained are:{len(pdf_links)}")
 
         return pdf_links
 
@@ -63,19 +63,19 @@ class PDFExtractor:
                             all_text += page.get_text()
                         doc.close()
 
-                        print("Successfully extracted content from PDF")
+                        #print("Successfully extracted content from PDF")
                         all_text_cases.append(all_text)
                     except Exception as e:
-                        print(f"Failed to process PDF: {e}")
+                        #print(f"Failed to process PDF: {e}")
                         all_text_cases.append("Failed to extract text")
                 else:
-                    print(f"URL does not point to a valid PDF: {pdf_url}")
+                    #print(f"URL does not point to a valid PDF: {pdf_url}")
                     all_text_cases.append("Not a valid PDF")
             except Exception as e:
                 print(f"Error accessing URL {pdf_url}: {e}")
                 all_text_cases.append("Error accessing URL")
 
-        print(f"Processed {len(all_text_cases)} out of {len(pdf_links)} PDFs")
+        #print(f"Processed {len(all_text_cases)} out of {len(pdf_links)} PDFs")
         return all_text_cases
 
     def get_name(self, all_text_cases):
@@ -122,7 +122,7 @@ class PDFExtractor:
                             defendant = defendant.replace(avoid, "").strip()
 
                         case_names.append(f"{plaintiff} v. {defendant}")
-        print(f"The number of case names extracted is: {len(case_names)}")
+        #print(f"The number of case names extracted is: {len(case_names)}")
         return case_names
 
     def find_year(self,all_text_cases):
@@ -150,7 +150,7 @@ class PDFExtractor:
                 case_years.append(year_date)
             else:
                 case_years.append("year not found")
-        print(f"The number of years extracted is :{len(case_years)}")
+        #print(f"The number of years extracted is :{len(case_years)}")
 
         return case_years
 
