@@ -1,4 +1,6 @@
 import json
+
+from scipy.stats import cosine
 from tqdm import tqdm
 
 from sentence_transformers import SentenceTransformer
@@ -95,24 +97,94 @@ def embeddings_func(cases):
         return embeddings
 
     return embeddings
+
 # redo  the below code.
 def rag(query, mode, cases, embeddings):
-    similarities = {} # a dict
+    similarities = {} # a dict that holds case id as the key and a number that says how similar is that case with the query as the value
 
     e_model = SentenceTransformer('all-MiniLM-L6-v2')
-    for case_id, case_embeddings in embeddings.items():
-        # embed the query
-        similarity_embedding = e_model.encode(query)
-        similarities[case_id] = similarity_embedding
+    # embed the query
+    query_embedding = e_model.encode(query)
 
+    # after embedding the user query, find relevant cases from case_embeddings / embeddings -> dict
+    # to find relevant cases from embeddings dictionary related to query
+    for case_id, case_embeddings in embeddings.items():
         # finding similarity
+        similarity =cosine(case_embeddings, query_embedding) # similarity is a number bw -1 to 1 that says how similar the case at the current iteration is with the query. if its near to 1 it has more similarity
+        similarities[case_id] = similarity
+
+    sorted_similarities = sorted(similarities.items(), key=lambda x: x[1], reverse = True)
+
+    # top 3 of the sorted similarities
+    top_cases  = sorted_similarities[:3]
+    # top_cases is a list of tuples,
+    # [(case_id1, similarity_score1), (case_id2, similarity_score2), (case_id3, similarity_score3)]
+
+    relevant_cases = [] # this is to hold the content ( non embedded form ) of cases relevant to the query
+    for case_id, similarity in top_cases:
+        # Now case_id contains the ID (e.g., "case_0")
+        # and similarity contains the similarity score (e.g., 0.85)
+        case = cases[case_id]
+        relevant_cases.append({
+            'name': case['name'],
+            'year': case['year'],
+            'similarity': similarity
+        })
+    return relevant_cases
+
+# USING FLAN T5
+def generate_response(query, mode, relevant_cases, cases):
+
+    from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
+    import torch
+
+    # Initialize the Flan-T5 model
+    tokenizer = AutoTokenizer.from_pretrained("google/flan-t5-xl")
+    model = AutoModelForSeq2SeqLM.from_pretrained("google/flan-t5-xl").to("cpu")
+
+    # Create context from relevant cases
+    context = "Relevant cases:\n"
+    for i, case in enumerate(relevant_cases):
+        case_id = next(cid for cid, _ in relevant_cases if cases[cid]['name'] == case['name'])
+        case_text = cases[case_id]['Text'][:3000]  # Get the first part of the case text
+        context += f"{i + 1}. {case['name']} ({case['year']}): {case_text[:300]}...\n\n"
+
+    # Create prompt based on mode
+    if mode == "1":  # Advice
+        instruction = f"Based on the following legal cases, provide legal advice for this query: {query}"
+    elif mode == "2":  # Arguments
+        instruction = f"Based on the following legal cases, generate legal arguments for both sides of this issue: {query}"
+    else:  # Other
+        instruction = f"Based on the following legal cases, respond to this query: {query}"
+
+    input_text = f"{instruction}\n\n{context}"
+
+    # Generate response
+    inputs = tokenizer(input_text, return_tensors='pt', truncation=True, max_length=1024).to("cpu")
+    outputs = model.generate(**inputs, max_length=512, num_beams=4, early_stopping=True)
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    return {
+        "response": response,
+        "relevant_cases": relevant_cases
+    }
 
 
 if __name__ == "__main__":
     cases  = create_database()
     embeddings = embeddings_func(cases)
+    while True:
 
-    input_text = input("Please enter the query you want to give to the model")
-    mode_input = input("Please enter 1 if you want an advice, 2 if you want to generate legal arguments or 3 for other mode of response")
+        input_text = input("Please enter the query you want to give to the model")
+        mode_input = input("Please enter 1 if you want an advice, 2 if you want to generate legal arguments or 3 for other mode of response")
 
-    rag(input_text, mode_input, cases, embeddings)
+        relevant_cases = rag(input_text, mode_input, cases, embeddings)
+
+        # Generate response
+        result = generate_response(input_text, mode_input, relevant_cases, cases)
+
+        # Display the response
+        print("\nLexDebate AI Response:", result["response"])
+        print("\nBased on relevant cases:")
+        for i, case in enumerate(result["relevant_cases"]):
+            print(f"  {i + 1}. {case['name']} ({case['year']}) - Relevance: {case['similarity']:.2f}")
