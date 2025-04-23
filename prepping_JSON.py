@@ -73,7 +73,7 @@ def embeddings_func(cases):
 
     e_model = SentenceTransformer('all-MiniLM-L6-v2')
 
-    embeddings = {}
+    embeddings = {} # case embeddings
 
     for key, value in cases.items(): # items returns a tuple value in the format (key, value)
         # most models have limit on tokens they can embed
@@ -95,7 +95,24 @@ def embeddings_func(cases):
         return embeddings
 
     return embeddings
+# redo  the below code.
+def rag(query, mode, cases, embeddings):
+    similarities = {} # a dict
+
+    e_model = SentenceTransformer('all-MiniLM-L6-v2')
+    for case_id, case_embeddings in embeddings.items():
+        # embed the query
+        similarity_embedding = e_model.encode(query)
+        similarities[case_id] = similarity_embedding
+
+        # finding similarity
+
 
 if __name__ == "__main__":
     cases  = create_database()
     embeddings = embeddings_func(cases)
+
+    input_text = input("Please enter the query you want to give to the model")
+    mode_input = input("Please enter 1 if you want an advice, 2 if you want to generate legal arguments or 3 for other mode of response")
+
+    rag(input_text, mode_input, cases, embeddings)
