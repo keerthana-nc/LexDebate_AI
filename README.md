@@ -19,7 +19,8 @@ Web scrapping is executed in two classes,
 
 Part2
 
-main.py file contains the code to run these two classes and view the output. It displays the number of files accessed, case numbers along with years and summaries. This is used to cross check data. 
+Prepping_JSON: 
+
 
 Part3, 
 GUI
