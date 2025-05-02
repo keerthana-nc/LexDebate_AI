@@ -4,6 +4,8 @@ from urllib.parse import urljoin
 import fitz  # PyMuPDF
 import re
 from urllib.parse import urljoin
+#import pdfplumber
+#import io
 
 
 class PDFExtractor:
@@ -38,12 +40,11 @@ class PDFExtractor:
 
         #print(f"the number of pdf links obtained are:{len(pdf_links)}")
 
-        return pdf_links
+        return pdf_links[:3] # passing only first 3 pdf's to enable faster execution
 
     def get_content(self, pdf_links):
         '''
-        This function is responsible for extracting content directly from PDF links
-        :return: A list that contains the text extracted from the pdf links
+        Extracts content from PDFs
         '''
         all_text_cases = []
 
@@ -52,30 +53,24 @@ class PDFExtractor:
                 print(f"Accessing PDF: {pdf_url}")
                 pdf_response = requests.get(pdf_url, headers=self.headers)
 
-                # Check if response is actually a PDF (by checking content type or binary signature)
                 if pdf_response.headers.get('Content-Type', '').lower() == 'application/pdf' or pdf_response.content[
                                                                                                 :4] == b'%PDF':
                     try:
-                        # Try to open the PDF directly
                         doc = fitz.open(stream=pdf_response.content, filetype="pdf")
                         all_text = ""
                         for page in doc:
                             all_text += page.get_text()
                         doc.close()
 
-                        #print("Successfully extracted content from PDF")
                         all_text_cases.append(all_text)
                     except Exception as e:
-                        #print(f"Failed to process PDF: {e}")
                         all_text_cases.append("Failed to extract text")
                 else:
-                    #print(f"URL does not point to a valid PDF: {pdf_url}")
                     all_text_cases.append("Not a valid PDF")
             except Exception as e:
                 print(f"Error accessing URL {pdf_url}: {e}")
                 all_text_cases.append("Error accessing URL")
 
-        #print(f"Processed {len(all_text_cases)} out of {len(pdf_links)} PDFs")
         return all_text_cases
 
     def get_name(self, all_text_cases):
