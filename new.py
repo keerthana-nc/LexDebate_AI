@@ -38,9 +38,9 @@ class WebScrapping:
                 filtered_year_links.append(link)
         year_links = filtered_year_links
 
-        print(f"the length of year_links after removing html files are:{len(year_links)}")
+        #print(f"the length of year_links after removing html files are:{len(year_links)}")
 
-        return year_links
+        return year_links[:2] # for demo purpose
 
     def get_html_links(self, year_links):
         '''
@@ -59,9 +59,9 @@ class WebScrapping:
                     html_link = urljoin(link, href_links)
                     html_links.append(html_link)
 
-        print(f"the total number of html files read are: {len(html_links)}")  # 1299
+        #print(f"the total number of html files read are: {len(html_links)}")  # 1299
 
-        return html_links
+        return html_links[:10] # for demo purpose
 
 
 
