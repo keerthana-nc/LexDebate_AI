@@ -6,7 +6,6 @@ import fitz
 from pdf_extractor import PDFExtractor
 from new import WebScrapping
 
-
 # Test fixtures
 @pytest.fixture
 def mock_headers():
