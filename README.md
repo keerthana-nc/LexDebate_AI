@@ -19,20 +19,72 @@ Web scrapping is executed in two classes,
 
 Part2
 
-main.py file contains the code to run these two classes and view the output. It displays the number of files accessed, case numbers along with years and summaries. This is used to cross check data. 
+Prepping_JSON: 
+
+This file contains the following classes
+
+LegalCase: Stores individual case data (ID, name, year, text).
+
+CaseDatabase: Manages the collection of cases:
+
+Creates database by scraping the tax court website.
+Saves and loads cases from JSON files.
+Provides case lookup functionality.
+
+
+CaseEmbeddings: Handles vector representations of cases:
+
+Creates embeddings using SentenceTransformer.
+Saves and loads embeddings from JSON.
+Provides query encoding for similarity search.
+
+
+LegalRAG: 
+
+Finds relevant cases based on query similarity -> implements the RAG function.
+Generates structured responses using Flan-T5. But when the model fails to provide a lengthy enough response (=>50) or repeat the query then we have functions called fallback mechanisms to retrieve related content based on the query and answere based on that for reliable outputs. 
+Formats responses for different modes (advice, arguments, general)
+
+The system works by first collecting case data, converting it to embeddings for efficient retrieval, and then using Flan T5(LLM) to generate contextually relevant responses based on the most similar cases.
 
 Part3, 
 GUI
 
 I built a website, http://127.0.0.1:5000
-It has a drop down list that shows all the years accessed from the legal website. Upon clicking these years from the drop down, case details such as case name, case year and case summary will be displayed in the website. 
-When the website is accessed, first page displayed is a loading page, it shows the status of data loading. The page automatically loads all the data once legal data has been scrapped. This website acts as a interface for a user to access the data scrapped off from the website. 
+The website has 5 functional buttons, Legal advice button, legal argument generator, other button ( for general questions ), send button and Build database button. 
 
+Instructions for a new user to use the files and website:
+
+The Flask_website page imports the other modules and functions from those modules by creating an instance/objectt for the class. This file also contains the html css and JS script. 
+
+The following are the versions you must have to be able to run the Flask_webpage file:
+
+Python - 3.11
+
+Flask - 2.3.3
+
+Torch - 2.0.1
+
+numpy - 1.24.3
+
+sentence transformers - 2.2.2
+
+Transformers - 4.30.2
+
+tqdm - 4.65.0
+
+scikit-learn - 1.2.2
+
+requests - 2.31.0
+
+BeautifulSoup4 - 4.12.2
+
+PyMuPDF - 1.22.3
+
+Note: Sometimes even when PyMuPDF is correctly installed you may encounter module 'frontend' not found. Please upgrade PyMUPDF if required. Otherwise, try 'from PyMuPDF import fitz' instead of 'import fitz'
+
+A folder named data will be downloaded in the same directory as you are working on, where you can find cases retrieved in dictionary format ( a format that is required by the model )
 Note: 
 Processing 44 years, 1299 html files and every pdf file in all the 1299 html files takes a long time to load all the data. For demonstration purpose, I have included 2 recent years that is 2025 and 2024. It loads the case file it was able to access from these two year links. 
+It embeds 3 cases (to enable faster execution to view and use the website).
 
-
-Instructions for a new user to use the files and website
-
-This github repository has four files. Save new.py, pdf_extractor.py, main.py and web_app.py in the same directory. Run the web_app.py to load data into the website and see how it runs. It has a clear debug information giving details after loading every case file. 
-main.py can be run in order to see all the information in TUI. 
